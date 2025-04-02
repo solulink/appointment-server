@@ -4,12 +4,15 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const Appointment = require('./models/Appointment');
 
+
+
 const app = express();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
-
+// For URL-encoded form data (key=value&key2=value2)
+app.use(express.urlencoded({ extended: true }));
 // MongoDB Connection
 //mongoose.connect(process.env.MONGODB_URI)
 //  .then(() => console.log('Connected to MongoDB Atlas'))
@@ -37,8 +40,12 @@ app.get('/', (req, res) => {
 // Create appointment
 app.post('/appointments', async (req, res) => {
   try {
-    const { name, email, phone, date, time, service } = req.body;
-    
+
+    //console.log("name: ", req.body.name);
+      // Access all key-value pairs
+    const formData = req.body;
+    const { name, email, phone, date, time, service } = formData;
+    console.log(formData);
     const appointment = new Appointment({
       name,
       email,
