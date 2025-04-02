@@ -11,10 +11,24 @@ app.use(cors());
 app.use(express.json());
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB Atlas'))
-  .catch(err => console.error('MongoDB connection error:', err));
-
+//mongoose.connect(process.env.MONGODB_URI)
+//  .then(() => console.log('Connected to MongoDB Atlas'))
+//  .catch(err => console.error('MongoDB connection error:', err));
+const connectDB = async () => {
+    try {
+      await mongoose.connect(process.env.MONGODB_URI, {
+        serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+        socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
+      });
+      console.log('Connected to MongoDB Atlas');
+    } catch (error) {
+      console.error('MongoDB connection error:', error);
+      process.exit(1); // Exit process with failure
+    }
+  };
+  
+  // Call connectDB before starting the server
+  connectDB();
 // Routes
 app.get('/', (req, res) => {
   res.send('Appointment Scheduling API');
