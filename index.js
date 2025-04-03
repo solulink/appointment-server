@@ -44,7 +44,7 @@ app.post('/appointments', async (req, res) => {
     //console.log("name: ", req.body.name);
       // Access all key-value pairs
     const formData = req.body;
-    const { name, email, phone, date, time, service } = formData;
+    const { name, email, phone, date, time, service, numberofpeople } = formData;
     console.log(formData);
     const appointment = new Appointment({
       name,
@@ -52,7 +52,8 @@ app.post('/appointments', async (req, res) => {
       phone,
       date,
       time,
-      service
+      service,
+      numberofpeople
     });
 
     await appointment.save();

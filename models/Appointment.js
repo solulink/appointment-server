@@ -31,6 +31,11 @@ const appointmentSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  numberofpeople: {
+    type: Number,
+    required: false,
+    default:1
+  },
   createdAt: {
     type: Date,
     default: Date.now
