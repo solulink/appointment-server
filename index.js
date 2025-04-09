@@ -14,7 +14,9 @@ app.use(bodyParser.json());
 
 // Connect to MongoDB when the server starts
 connect().catch(err => console.error('Failed to connect to MongoDB on startup', err));
-
+app.get('/', (req, res) => {
+    res.send('Appointment Management API');
+  });
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/reports', reportRoutes);
 
