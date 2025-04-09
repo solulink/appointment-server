@@ -1,130 +1,23 @@
-require('dotenv').config();
 const express = require('express');
-const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
 const cors = require('cors');
-const Appointment = require('./models/Appointment');
-
-
+const appointmentRoutes = require('./routes/appointments');
+const reportRoutes = require('./routes/reports');
+const { connect } = require('./mongoConfig');
+require('dotenv').config();
 
 const app = express();
+const port = process.env.PORT || 3000;
 
-// Middleware
 app.use(cors());
-app.use(express.json());
-// For URL-encoded form data (key=value&key2=value2)
-app.use(express.urlencoded({ extended: true }));
-// MongoDB Connection
-//mongoose.connect(process.env.MONGODB_URI)
-//  .then(() => console.log('Connected to MongoDB Atlas'))
-//  .catch(err => console.error('MongoDB connection error:', err));
-const connectDB = async () => {
-    try {
-      await mongoose.connect(process.env.MONGODB_URI, {
-        serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
-        socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
-      });
-      console.log('Connected to MongoDB Atlas');
-    } catch (error) {
-      console.error('MongoDB connection error:', error);
-      process.exit(1); // Exit process with failure
-    }
-  };
-  
-  // Call connectDB before starting the server
-  connectDB();
-// Routes
-app.get('/', (req, res) => {
-  res.send('Appointment Scheduling API');
+app.use(bodyParser.json());
+
+// Connect to MongoDB when the server starts
+connect().catch(err => console.error('Failed to connect to MongoDB on startup', err));
+
+app.use('/api/appointments', appointmentRoutes);
+app.use('/api/reports', reportRoutes);
+
+app.listen(port, () => {
+    //console.log(`Server is running on port ${port}`);
 });
-
-// Create appointment
-app.post('/appointments', async (req, res) => {
-  try {
-
-    //console.log("name: ", req.body.name);
-      // Access all key-value pairs
-    const formData = req.body;
-    const { name, email, phone, date, time, service, numberofpeople } = formData;
-    console.log(formData);
-    const appointment = new Appointment({
-      name,
-      email,
-      phone,
-      date,
-      time,
-      service,
-      numberofpeople
-    });
-
-    await appointment.save();
-    res.status(201).json(appointment);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-// Get all appointments
-app.get('/appointments', async (req, res) => {
-  try {
-    const appointments = await Appointment.find().sort({ date: 1, time: 1 });
-    res.json(appointments);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Get appointment by ID
-app.get('/appointments/:id', async (req, res) => {
-  try {
-    const appointment = await Appointment.findById(req.params.id);
-    if (!appointment) {
-      return res.status(404).json({ error: 'Appointment not found' });
-    }
-    res.json(appointment);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Update appointment
-app.put('/appointments/:id', async (req, res) => {
-  try {
-    const appointment = await Appointment.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    );
-    if (!appointment) {
-      return res.status(404).json({ error: 'Appointment not found' });
-    }
-    res.json(appointment);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-// Delete appointment
-app.delete('/appointments/:id', async (req, res) => {
-  try {
-    const appointment = await Appointment.findByIdAndDelete(req.params.id);
-    if (!appointment) {
-      return res.status(404).json({ error: 'Appointment not found' });
-    }
-    res.json({ message: 'Appointment deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
-module.exports = app; // For Vercel
