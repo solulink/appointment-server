@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 
 // Helper function to validate appointment data
 const isValidAppointment = (appointment) => {
+   // console.log(appointment);
     return (
         appointment.service &&
         appointment.name &&
@@ -12,7 +13,7 @@ const isValidAppointment = (appointment) => {
         typeof appointment.date === 'string' && // Expecting a string now
         appointment.time &&
         appointment.status !== undefined &&
-        typeof appointment.numberOfPeople === 'number' &&
+        appointment.numberOfpeople &&
         appointment.email
     );
 };
@@ -31,17 +32,24 @@ router.get('/', async (req, res) => {
 
 // POST a new appointment
 router.post('/', async (req, res) => {
-    const newAppointment = req.body;
+    
+    // Convert to JSON object
+   // console.log(req.body);
+    const newAppointment = JSON.parse(req.body);
+    newAppointment.numberOfpeople = parseInt(newAppointment.numberOfpeople, 10);
 
     if (!isValidAppointment(newAppointment)) {
+        console.log("invalid data")
         return res.status(400).json({ error: 'Invalid appointment data' });
     }
 
     try {
         await connect();
+        //console.log("Begin Insert")
         const appointment = new AppointmentModel(newAppointment);
         const savedAppointment = await appointment.save();
         res.status(201).json(savedAppointment);
+        //console.log("Success Insert")
     } catch (error) {
         console.error('Error adding appointment:', error);
         res.status(500).json({ error: 'Failed to add appointment' });

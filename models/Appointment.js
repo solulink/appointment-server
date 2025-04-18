@@ -31,6 +31,11 @@ const appointmentSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  status: {
+    type: String,
+    trim: true,
+    default:"pending"
+  },
   numberofpeople: {
     type: Number,
     required: false,
